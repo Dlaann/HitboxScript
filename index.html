@@ -5,68 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unauthorized Access</title>
     <style>
+        /* Set background gradient hitam */
         body {
-            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            flex-direction: column;
-            background-image: url('https://www.w3schools.com/w3images/mountains.jpg');
-            background-size: cover;
-            background-position: center;
-        }
-        h1 {
-            font-size: 3rem;
-            color: #e74c3c;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-        }
-        p {
-            font-size: 1.5rem;
-            color: #ecf0f1;
-            margin-top: 20px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-        }
-        .container {
-            text-align: center;
-            border: 2px solid white;
-            padding: 30px;
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 10px;
-        }
-        .button {
-            background-color: #e74c3c;
-            padding: 10px 20px;
-            border: none;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
             color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            margin-top: 30px;
-            border-radius: 5px;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
         }
-        .button:hover {
-            background-color: #c0392b;
+
+        /* Animasi RGB untuk teks */
+        @keyframes rgb-animation {
+            0% {
+                color: rgb(255, 0, 0); /* Red */
+            }
+            25% {
+                color: rgb(0, 255, 0); /* Green */
+            }
+            50% {
+                color: rgb(0, 0, 255); /* Blue */
+            }
+            75% {
+                color: rgb(255, 255, 0); /* Yellow */
+            }
+            100% {
+                color: rgb(255, 0, 255); /* Magenta */
+            }
+        }
+
+        /* Teks dengan animasi RGB dan desain modern */
+        h1 {
+            font-size: 4rem;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+            animation: rgb-animation 5s infinite alternate; /* RGB Animation */
+        }
+
+        p {
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+            animation: rgb-animation 5s infinite alternate;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div>
         <h1>Why are you here?</h1>
         <p>Are you trying to steal?</p>
-        <button class="button" onclick="goBack()">Go Back</button>
     </div>
-
-    <script>
-        function goBack() {
-            window.history.back();
-        }
-    </script>
 
 </body>
 </html>
