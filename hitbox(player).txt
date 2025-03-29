@@ -1,0 +1,113 @@
+local P, R, S, V = game:GetService("Players"), game:GetService("RunService"), game:GetService("StarterGui"), game:GetService("VirtualUser")
+_G.HeadSize, _G.HitboxEnabled, _G.HideHitbox, _G.AutoHit, G = 10, true, false, true, {}
+
+local lastCmdTime = 0 -- Track the last time a command was executed
+local commandCooldown = 1 -- Time in seconds between commands to prevent double execution
+
+-- Apply hitbox (adjusts HumanoidRootPart size)
+local function applyHitbox(p)
+    if not _G.HitboxEnabled then return end
+    local r = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+    if r then
+        r.Size, r.CanCollide, r.Material, r.Transparency = Vector3.new(_G.HeadSize, _G.HeadSize, _G.HeadSize), false, Enum.Material.Neon, _G.HideHitbox and 1 or 0.99
+        local c = p.Team and p.Team.TeamColor.Color or Color3.new(1, 1, 1)
+        if not G[r] then 
+            G[r] = Instance.new("Highlight", r)
+            G[r].FillTransparency, G[r].OutlineTransparency = 1, 0.1
+        end
+        G[r].OutlineColor = c
+    end
+end
+
+-- Detect if inside an enemy's hitbox
+local function insideEnemyHitbox()
+    local lP, lR = P.LocalPlayer, P.LocalPlayer.Character and P.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not lR then return {} end
+    local targets = {}
+    for _, p in ipairs(P:GetPlayers()) do
+        if p ~= lP then
+            local e = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+            if e and (lR.Position - e.Position).Magnitude <= e.Size.X / 2 then
+                table.insert(targets, e)
+            end
+        end
+    end
+    return targets
+end
+
+-- Heartbeat event to apply hitboxes and trigger auto-hit if needed
+R.Heartbeat:Connect(function()
+    if _G.HitboxEnabled then
+        for _, p in ipairs(P:GetPlayers()) do
+            if p ~= P.LocalPlayer then 
+                applyHitbox(p) 
+            end
+        end
+    end
+
+    -- Auto-hit if inside enemy's hitbox
+    local targets = insideEnemyHitbox()
+    if _G.AutoHit and #targets > 0 then
+        for _ = 1, 3 do
+            V:Button1Down(Vector2.new())  -- Simulate mouse click down
+            task.wait(0.05) 
+            V:Button1Up(Vector2.new())    -- Simulate mouse click up
+        end
+    end
+end)
+
+-- Player added or removed logic (apply hitbox to new players)
+P.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function()
+        task.wait(0.1)
+        if _G.HitboxEnabled then applyHitbox(p) end
+    end)
+end)
+
+P.PlayerRemoving:Connect(function(p)
+    G[p] = nil
+end)
+
+-- Handle chat commands to toggle settings and adjust hitbox
+P.LocalPlayer.Chatted:Connect(function(m)
+    local currentTime = tick()
+    
+    -- Check if cooldown has passed since last command
+    if currentTime - lastCmdTime < commandCooldown then
+        return
+    end
+    lastCmdTime = currentTime
+
+    m = m:lower()
+    if m == "/e hbt" then
+        -- Toggle the hitbox and auto-hit completely off or on
+        _G.HitboxEnabled = not _G.HitboxEnabled
+        _G.AutoHit = _G.HitboxEnabled -- Disable AutoHit if hitbox is off
+        if _G.HitboxEnabled then
+            -- Apply hitbox to existing players
+            for _, p in ipairs(P:GetPlayers()) do
+                if p ~= P.LocalPlayer then applyHitbox(p) end
+            end
+            S:SetCore("SendNotification", {Title = "Hitbox Status", Text = "Hitbox and Auto-Hit are now enabled.", Duration = 3})
+        else
+            -- Remove any existing hitbox outlines
+            for _, p in ipairs(P:GetPlayers()) do
+                local r = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+                if r and G[r] then
+                    G[r]:Destroy()
+                    G[r] = nil
+                end
+            end
+            S:SetCore("SendNotification", {Title = "Hitbox Status", Text = "Hitbox and Auto-Hit are now disabled.", Duration = 3})
+        end
+    elseif m == "/e hbv" then
+        -- Toggle hide hitbox visibility
+        _G.HideHitbox = not _G.HideHitbox
+        local status = _G.HideHitbox and "hidden" or "visible"
+        S:SetCore("SendNotification", {Title = "Hide Hitbox Status", Text = "Hitbox visibility is now " .. status, Duration = 3})
+    elseif m:match("^/e hbs ") then
+        -- Update head size
+        _G.HeadSize = tonumber(m:match("/e hbs (%d+)")) or _G.HeadSize
+        S:SetCore("SendNotification", {Title = "Hitbox Size Updated", Text = "Head size is now " .. _G.HeadSize, Duration = 3})
+    end
+end)
